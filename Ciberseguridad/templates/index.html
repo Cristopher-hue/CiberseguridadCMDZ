@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Firma Digital</title>
+    <style>
+        :root {
+            --bg-body: #131313f3;
+            --bg-box: #3556ff;
+            --border-box: #792bff;
+            --border-accent: #3eecff;
+            --btn-bg: #3769ff;
+            --btn-border: #26c5ff;
+            --btn-hover: #0314aa;
+            --text-light: #efeded;
+            --console-bg: #222;
+            --console-text-default: #8400ff;
+            --success-color: #00ff66;
+            --error-color: #ff6666;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: var(--bg-body);
+            color: var(--text-light);
+        }
+
+        h2 {
+            font-weight: 500;
+            border-bottom: 2px solid var(--border-accent);
+            padding-bottom: 12px;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .box {
+            background: var(--bg-box);
+            border: 1px solid var(--border-box);
+            border-radius: 8px;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s;
+        }
+
+        .box:hover {
+            transform: translateY(-2px);
+        }
+
+        .box-title {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 8px;
+        }
+
+        .field {
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .file-dropzone {
+            border: 2px dashed var(--btn-border);
+            padding: 20px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+            border-radius: 6px;
+            transition: background 0.3s;
+        }
+
+        .file-dropzone:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .file-name-display {
+            font-size: 13px;
+            margin-top: 8px;
+            word-break: break-all;
+            font-style: italic;
+            color: var(--border-accent);
+        }
+
+        .actions {
+            display: flex;
+            width: 100%;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px 20px;
+            background-color: var(--btn-bg);
+            border: 1px solid var(--btn-border);
+            color: white;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: var(--btn-hover);
+        }
+
+        .result-container {
+            margin-top: 30px;
+        }
+
+        #console {
+            background: var(--console-bg);
+            color: var(--console-text-default);
+            font-family: 'Courier New', Courier, monospace;
+            padding: 15px;
+            min-height: 100px;
+            white-space: pre-wrap;
+            border: 1px solid #00000086;
+            border-radius: 6px;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Sistema de Firma Digital</h2>
+
+    <div class="dashboard-grid">
+        <!-- Panel 1: Firmar -->
+        <div class="box">
+            <div>
+                <h3 class="box-title">Emitir Firma</h3>
+                <form id="signForm">
+                    <div class="field">
+                        <label>Selecciona el documento original:</label>
+                        <div class="file-dropzone" onclick="document.getElementById('archivoSign').click()">
+                            <span>Examinar archivo...</span>
+                            <input type="file" id="archivoSign" name="archivo" required onchange="actualizarNombre(this, 'nameSign')">
+                            <div id="nameSign" class="file-name-display">Ningún archivo seleccionado</div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="actions">
+                <button type="button" onclick="enviarAccion('archivoSign', '/firmar')">Firmar documento</button>
+            </div>
+        </div>
+
+        <!-- Panel 2: Verificar -->
+        <div class="box">
+            <div>
+                <h3 class="box-title">Validar Autenticidad</h3>
+                <form id="verifyForm">
+                    <div class="field">
+                        <label>Selecciona el documento firmado:</label>
+                        <div class="file-dropzone" onclick="document.getElementById('archivoVerify').click()">
+                            <span>Examinar archivo...</span>
+                            <input type="file" id="archivoVerify" name="archivo" required onchange="actualizarNombre(this, 'nameVerify')">
+                            <div id="nameVerify" class="file-name-display">Ningún archivo seleccionado</div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="actions">
+                <button type="button" onclick="enviarAccion('archivoVerify', '/verificar')">Verificar documento</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="result-container">
+        <h3>Consola de Resultados</h3>
+        <div id="console">Sistema listo. Esperando operaciones...</div>
+    </div>
+
+    <script>
+        function actualizarNombre(input, targetId) {
+            const display = document.getElementById(targetId);
+            if (input.files && input.files[0]) {
+                display.textContent = input.files[0].name;
+            } else {
+                display.textContent = "Ningún archivo seleccionado";
+            }
+        }
+
+        async function enviarAccion(inputId, endpoint) {
+            const input = document.getElementById(inputId);
+            const consoleDiv = document.getElementById('console');
+
+            if (!input.files || !input.files[0]) {
+                consoleDiv.textContent = "Error: Por favor, selecciona un archivo en el bloque correspondiente antes de continuar.";
+                consoleDiv.style.color = "var(--error-color)";
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('archivo', input.files[0]);
+
+            consoleDiv.textContent = `Procesando...\nEnviando petición a ${endpoint}\nArchivo: ${input.files[0].name}`;
+            consoleDiv.style.color = "#ffffff";
+
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+
+                if (data.exito !== undefined) {
+                    consoleDiv.textContent = `[Resultado Firma] ${data.mensaje}`;
+                    consoleDiv.style.color = data.exito ? "var(--success-color)" : "var(--error-color)";
+                } else if (data.valido !== undefined) {
+                    consoleDiv.textContent = `[Resultado Verificación] ${data.mensaje}`;
+                    consoleDiv.style.color = data.valido ? "var(--success-color)" : "var(--error-color)";
+                } else {
+                    consoleDiv.textContent = `[Respuesta] ${JSON.stringify(data)}`;
+                    consoleDiv.style.color = "var(--success-color)";
+                }
+            } catch (err) {
+                consoleDiv.textContent = "Error crítico: No se pudo establecer conexión con el servidor.";
+                consoleDiv.style.color = "var(--error-color)";
+            }
+        }
+    </script>
+</body>
+</html>
